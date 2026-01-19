@@ -1,14 +1,21 @@
-import { tasksTable } from '@/db/schema'
+import { SelectTask, tasksTable } from '@/db/schema'
 import db from '@/lib/db'
 import { and, eq, isNull } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET () {
-  const tasks = await db
+export async function GET (request: NextRequest) {
+  const { searchParams } = new URL(request.url)
+  const showCompleted = searchParams.get('showCompleted') === 'true'
+  const tasks: SelectTask[] = await db
     .select()
     .from(tasksTable)
-    .where(and(isNull(tasksTable.deletedAt), eq(tasksTable.completed, false)))
-  return NextResponse.json(tasks)
+    .where(
+      and(
+        isNull(tasksTable.deletedAt),
+        showCompleted ? undefined : eq(tasksTable.completed, false)
+      )
+    )
+  return NextResponse.json(tasks ?? [])
 }
 
 export async function POST (request: NextRequest) {

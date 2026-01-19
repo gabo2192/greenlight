@@ -11,6 +11,10 @@ export function TaskForm () {
   const { createTaskMutation } = useTasks()
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    if (title.trim().length === 0) {
+      toast.error('Title is required')
+      return
+    }
     createTaskMutation.mutate({ title })
     setTitle('')
     toast.success('Task created successfully')
