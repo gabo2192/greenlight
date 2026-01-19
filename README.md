@@ -153,6 +153,29 @@ npm run test:e2e
 
 Screenshots from E2E tests are saved in `e2e/screenshots/`.
 
+## Engineering Considerations
+
+If I were to take this to production, here's what I'd focus on:
+
+### Scalability
+
+- **User sessions** — Right now all tasks live in a shared pool. First thing I'd add is user authentication (probably NextAuth) and a `user_id` foreign key on the tasks table. That way each user only sees their own tasks and we avoid any data mixing.
+- **Pagination** — The GET endpoint currently returns everything. Once we have hundreds of tasks per user, I'd switch to cursor-based pagination to keep response times snappy.
+- **Caching** — Next.js 16 has the new `"use cache"` directive which makes caching explicit and opt-in. I'd use that with `cacheTag()` on the task queries and call `revalidateTag()` on mutations to invalidate stale data.
+- **Database indexes** — Adding indexes on `user_id`, `completed`, and `deleted_at` would speed up filtered queries significantly.
+
+### Reliability
+
+- **Idempotency keys** — For the POST endpoint, accepting a client-generated idempotency key would prevent duplicate tasks if a user's network hiccups and retries the request.
+- **Better validation** — I'm doing basic title validation now, but Zod schemas would give us runtime type safety and cleaner error messages.
+- **Retry logic** — The frontend mutations could use exponential backoff for transient failures instead of just showing an error toast.
+
+### Observability
+
+- **Structured logging** — I'd swap console logs for something like Pino with request IDs so we can trace issues across the stack.
+- **Metrics** — Tracking things like task creation rate, API latency (p50/p95/p99), and error rates in Datadog or Prometheus would help catch problems early.
+- **Error tracking** — Sentry for catching and alerting on unhandled exceptions in both the API and React components.
+
 ## License
 
 MIT
