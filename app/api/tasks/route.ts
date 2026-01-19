@@ -39,21 +39,6 @@ export async function POST (request: NextRequest) {
   return NextResponse.json({ message: 'Task created' }, { status: 201 })
 }
 
-export async function PATCH (request: NextRequest) {
-  const { id } = await request.json()
-  const task = await db
-    .update(tasksTable)
-    .set({ completed: true })
-    .where(eq(tasksTable.id, id))
-    .returning()
-
-  if (!task) {
-    return NextResponse.json({ error: 'Task not found' }, { status: 404 })
-  }
-
-  return NextResponse.json({ message: 'Task updated' }, { status: 200 })
-}
-
 export async function DELETE (request: NextRequest) {
   const { id } = await request.json()
   const task = await db

@@ -31,9 +31,8 @@ export function useTasks () {
 
   const updateTaskMutation = useMutation<Task, Error, { id: string }>({
     mutationFn: data =>
-      fetch(`/api/tasks`, {
-        method: 'PATCH',
-        body: JSON.stringify({ id: data.id })
+      fetch(`/api/tasks/${data.id}`, {
+        method: 'PATCH'
       }).then(res => res.json()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
